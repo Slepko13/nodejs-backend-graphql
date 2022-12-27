@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "prepare": "husky install && npm run husky-pre-commit && npm run husky-commit-msg",
-    "husky-pre-commit": "npx husky add .husky/pre-commit \"npx lint-staged\"",
-    "husky-commit-msg": "npx husky add .husky/commit-msg \"npx --no -- commitlint --edit\"",
+    "husky-pre-commit": "husky add .husky/pre-commit \"npx lint-staged\"",
+    "husky-commit-msg": "husky add .husky/commit-msg \"npx --no -- commitlint --edit\"",
     "prettier": "prettier --write .",
     "lint": "eslint --fix .",
     "lint:check": "eslint ."
@@ -20,8 +20,8 @@
     "eslint": "^8.30.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-unused-imports": "^2.0.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "husky": "^8.0.0",
     "lint-staged": "^13.1.0",
     "prettier": "2.8.1"
@@ -29,6 +29,12 @@
   "lint-staged": {
     "*": "prettier --write --ignore-unknown",
     "*.(ts|js)": "eslint --fix ."
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "--no -- commitlint --edit"
+    }
   },
   "dependencies": {
     "express": "^4.18.2"
