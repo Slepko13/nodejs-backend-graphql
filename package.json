@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "husky install",
+    "prepare": "husky install && npm run husky-pre-commit && npm run husky-commit-msg",
+    "husky-pre-commit": "npx husky add .husky/pre-commit \"npx lint-staged\"",
+    "husky-commit-msg": "npx husky add .husky/commit-msg \"npx --no -- commitlint --edit\"",
     "prettier": "prettier --write .",
     "lint": "eslint --fix .",
     "lint:check": "eslint ."
@@ -20,6 +21,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-unused-imports": "^2.0.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.0",
     "lint-staged": "^13.1.0",
     "prettier": "2.8.1"
@@ -29,7 +31,6 @@
     "*.(ts|js)": "eslint --fix ."
   },
   "dependencies": {
-    "eslint-plugin-prettier": "^4.2.1",
     "express": "^4.18.2"
   }
 }
