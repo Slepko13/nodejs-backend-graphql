@@ -5,9 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon src/app.js",
-    "prepare": "husky install && npm run husky-pre-commit && npm run husky-commit-msg",
-    "husky-pre-commit": "husky add .husky/pre-commit \"npx lint-staged\"",
-    "husky-commit-msg": "husky add .husky/commit-msg \"npx --no -- commitlint --edit\"",
+    "prepare": "husky install",
     "prettier": "prettier --write .",
     "lint": "eslint --fix .",
     "lint:check": "eslint ."
