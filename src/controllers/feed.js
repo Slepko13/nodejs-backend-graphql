@@ -117,6 +117,30 @@ exports.updatePost = (req, res, next) => {
     });
 };
 
+exports.deletePost = (req, res, next) => {
+  const postId = req.params.postId;
+  Post.findById(postId)
+    .then((post) => {
+      if (!post) {
+        const error = new Error('Post not found');
+        error.statusCode = 404;
+        throw error;
+      }
+      //?TODO Check if post belongs to logged user
+      clearImage(post.imageUrl);
+      return Post.findByIdAndRemove(postId);
+    })
+    .then((result) => {
+      res.status(200).json({ post: result, message: 'Post deleted' });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
 const clearImage = (filePath) => {
   filePath = path.join(__dirname, '..', '..', filePath);
   fs.unlink(filePath, (err) => console.log(err));
