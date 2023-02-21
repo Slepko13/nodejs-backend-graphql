@@ -1,9 +1,11 @@
 const path = require('path');
+const { createServer } = require('http');
 
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
+const { Server } = require('socket.io');
 
 const feedRoutes = require('./routes/feed');
 const authRoutes = require('./routes/auth');
@@ -66,8 +68,12 @@ mongoose
     useUnifiedTopology: true,
   })
   .then((res) => {
-    app.listen(8080, () => {
+    const server = app.listen(8080, () => {
       console.log('Server is running');
+    });
+    const io = require('./socket').init(server);
+    io.on('connection', (socket) => {
+      console.log('Client connected');
     });
   })
   .catch((err) => {
