@@ -1,14 +1,13 @@
 const path = require('path');
-const { createServer } = require('http');
 
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
-const { Server } = require('socket.io');
+const { graphqlHTTP } = require('express-graphql');
 
-const feedRoutes = require('./routes/feed');
-const authRoutes = require('./routes/auth');
+const qraphqlSchema = require('./graphql/schema');
+const qraphqlResolver = require('./graphql/resolvers');
 
 const app = express();
 const MONGODB_URI =
@@ -53,8 +52,25 @@ app.use((req, res, next) => {
 });
 
 app.use('/src/images', express.static(path.join(__dirname, 'images')));
-app.use('/feed', feedRoutes);
-app.use('/auth', authRoutes);
+
+app.use(
+  '/graphql',
+  graphqlHTTP({
+    schema: qraphqlSchema,
+    rootValue: qraphqlResolver,
+    graphiql: true,
+    customFormatErrorFn(err) {
+      if (!err.originalError) {
+        return err;
+      }
+      const { message = 'An error occured' } = err;
+      const {
+        originalError: { data, code = 500 },
+      } = err;
+      return { message, status: code, data };
+    },
+  })
+);
 
 app.use((error, req, res, next) => {
   console.log(error);
@@ -68,12 +84,8 @@ mongoose
     useUnifiedTopology: true,
   })
   .then((res) => {
-    const server = app.listen(8080, () => {
+    app.listen(8080, () => {
       console.log('Server is running');
-    });
-    const io = require('./socket').init(server);
-    io.on('connection', (socket) => {
-      console.log('Client connected');
     });
   })
   .catch((err) => {
