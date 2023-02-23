@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
+const Post = require('../models/post');
 
 module.exports = {
   login: async function ({ email, password }) {
@@ -49,7 +50,7 @@ module.exports = {
       errors.push({ message: 'Name is invalid' });
     }
     if (errors.length > 0) {
-      const error = new Error('Invalid input');
+      const error = new Error('Invalid input for new user');
       error.data = errors;
       error.code = 422;
       throw error;
@@ -69,6 +70,38 @@ module.exports = {
     return {
       ...user._doc,
       _id: user._id.toString(),
+    };
+  },
+  createPost: async function ({ postInput }, req) {
+    const { title, content, imageUrl } = postInput;
+    const errors = [];
+    if (validator.isEmpty(title) || !validator.isLength(title, { min: 3 })) {
+      errors.push({ message: 'Title is invalid' });
+    }
+    if (
+      validator.isEmpty(content) ||
+      !validator.isLength(content, { min: 5 })
+    ) {
+      errors.push({ message: 'Content is invalid' });
+    }
+    if (errors.length > 0) {
+      const error = new Error('Invalid input for new post');
+      error.data = errors;
+      error.code = 422;
+      throw error;
+    }
+    let post = new Post({
+      title,
+      content,
+      imageUrl,
+    });
+    post = await post.save();
+    //TODO Add post to users posts
+    return {
+      ...post._doc,
+      _id: post._id.toString(),
+      createdAt: post.createdAt.toISOString(),
+      updatedAt: post.updatedAt.toISOString(),
     };
   },
 };
