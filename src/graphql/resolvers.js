@@ -74,6 +74,12 @@ module.exports = {
   },
   createPost: async function ({ postInput }, req) {
     const { title, content, imageUrl } = postInput;
+    const { isAuth, userId } = req;
+    if (!isAuth) {
+      const error = new Error('Not authenticated!');
+      error.code = 401;
+      throw error;
+    }
     const errors = [];
     if (validator.isEmpty(title) || !validator.isLength(title, { min: 3 })) {
       errors.push({ message: 'Title is invalid' });
@@ -90,18 +96,56 @@ module.exports = {
       error.code = 422;
       throw error;
     }
+    let user = await User.findById(userId);
+    if (!user) {
+      const error = new Error('Invalid user');
+      error.code = 401;
+      throw error;
+    }
+
     let post = new Post({
       title,
       content,
       imageUrl,
+      creator: user,
     });
     post = await post.save();
-    //TODO Add post to users posts
+    user.posts.push(post);
+    await user.save();
     return {
       ...post._doc,
       _id: post._id.toString(),
       createdAt: post.createdAt.toISOString(),
       updatedAt: post.updatedAt.toISOString(),
+    };
+  },
+  loadPosts: async function ({ page }, req) {
+    const { isAuth } = req;
+    if (!isAuth) {
+      const error = new Error('Not authenticated!');
+      error.code = 401;
+      throw error;
+    }
+    if (!page) {
+      page = 1;
+    }
+    const perPage = 2;
+    const totalItems = await Post.find().countDocuments();
+    const posts = await Post.find()
+      .populate('creator')
+      .skip((page - 1) * perPage)
+      .limit(perPage)
+      .sort({ createdAt: -1 });
+    return {
+      posts: posts.map((p) => {
+        return {
+          ...p._doc,
+          _id: p._id.toString(),
+          createdAt: p.createdAt.toISOString(),
+          updatedAt: p.updatedAt.toISOString(),
+        };
+      }),
+      totalItems,
     };
   },
 };

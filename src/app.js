@@ -8,6 +8,7 @@ const { graphqlHTTP } = require('express-graphql');
 
 const qraphqlSchema = require('./graphql/schema');
 const qraphqlResolver = require('./graphql/resolvers');
+const auth = require('./middleware/auth');
 
 const app = express();
 const MONGODB_URI =
@@ -55,6 +56,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/src/images', express.static(path.join(__dirname, 'images')));
+app.use(auth);
 
 app.use(
   '/graphql',
