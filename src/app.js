@@ -9,6 +9,7 @@ const { graphqlHTTP } = require('express-graphql');
 const qraphqlSchema = require('./graphql/schema');
 const qraphqlResolver = require('./graphql/resolvers');
 const auth = require('./middleware/auth');
+const { clearImage } = require('./utils/utils');
 
 const app = express();
 const MONGODB_URI =
@@ -56,7 +57,26 @@ app.use((req, res, next) => {
 });
 
 app.use('/src/images', express.static(path.join(__dirname, 'images')));
+
 app.use(auth);
+
+app.put('/post-image', (req, res, next) => {
+  const { isAuth } = req;
+  if (!isAuth) {
+    const error = new Error('Not authenticated!');
+    error.code = 401;
+    throw error;
+  }
+  if (!req.file) {
+    return res.status(200).json({ message: 'No file provided' });
+  }
+  if (req.body.oldPath) {
+    clearImage(req.body.oldPath);
+  }
+  return res
+    .status(201)
+    .json({ message: 'File stored', filePath: req.file.path });
+});
 
 app.use(
   '/graphql',

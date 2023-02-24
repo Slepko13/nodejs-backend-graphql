@@ -25,7 +25,7 @@ module.exports = {
         userId: user._id.toString(),
       },
       'secret',
-      { expiresIn: '1h' }
+      { expiresIn: '4h' }
     );
     return {
       token,
@@ -146,6 +146,26 @@ module.exports = {
         };
       }),
       totalItems,
+    };
+  },
+  loadSinglePost: async function ({ postId }, req) {
+    const { isAuth } = req;
+    if (!isAuth) {
+      const error = new Error('Not authenticated!');
+      error.code = 401;
+      throw error;
+    }
+    let post = await Post.findById(postId).populate('creator');
+    if (!post) {
+      const error = new Error('Post not found');
+      error.statusCode = 404;
+      throw error;
+    }
+    return {
+      ...post._doc,
+      id: post._id.toString(),
+      createdAt: post.createdAt.toISOString(),
+      updatedAt: post.updatedAt.toISOString(),
     };
   },
 };
